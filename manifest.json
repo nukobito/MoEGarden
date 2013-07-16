@@ -1,6 +1,5 @@
 {
     "manifest_version": 2,
-    
     "name": "もえ栽培",
     "version": "0.1",
     "description": "Master of Epic栽培用タイマー",
@@ -9,7 +8,6 @@
         "48": "icons/icon48x48.png",
         "128": "icons/icon128x128.png"
     },
-    
     "browser_action": {
         "default_icon": {
             "19": "icons/icon19x19.png",
@@ -21,5 +19,8 @@
     "background": {
         "persistent": false,
         "scripts": [ "background.js" ]
-    }
+    },
+    "permissions": [
+        "alarms"
+    ]
 }
