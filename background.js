@@ -24,6 +24,7 @@ chrome.alarms.onAlarm.addListener( function ( alarm ) {
 } );
 */
 
-chrome.runtime.onStarted.addListener( function () {
-    console.log( 'onStarted' );
+
+chrome.browserAction.onClicked.addListener( function( tab ) {
+    console.log( 'onClicked' );
 } );
