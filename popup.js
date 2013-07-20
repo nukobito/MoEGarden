@@ -26,13 +26,27 @@
     
     function createCheckbox( times ) {
         for ( var i = 0; i < times.length; i++ ) {
-            var checkbox = window.document.createElement( 'input' );
-            checkbox.type = 'checkbox';
-            
-            var text = window.document.createTextNode( String( i ) + '回目 (' + String( times[ i ] ) + ')' );
-            
-            checkboxes.appendChild( checkbox );
-            checkboxes.appendChild( text );
+            var checkbox = null;
+            var text = '';
+            switch ( i ) {
+                case 0:
+                    // 何もしない。
+                    break;
+                case (times.length - 1):
+                    checkbox = window.document.createElement( 'input' );
+                    checkbox.type = 'checkbox';
+                    checkboxes.appendChild( checkbox );
+                    text = window.document.createTextNode( '収穫まで' );
+                    checkboxes.appendChild( text );
+                    break;
+                default:
+                    checkbox = window.document.createElement( 'input' );
+                    checkbox.type = 'checkbox';
+                    checkboxes.appendChild( checkbox );
+                    text = window.document.createTextNode( String( times[ i ] ) + '分まで' + ' ' );
+                    checkboxes.appendChild( text );
+                    break;
+            }
         }
     }
     
