@@ -11,7 +11,7 @@
         { text: '360分 (スイカ名等)', times: [ 360, 300, 180, 60, 0 ] }
     ];
     
-    var type = null, checkboxes = null;
+    var type = null, checkboxes = null, start = null;
     
     function createSelect() {
         type.length = items.length;
@@ -59,6 +59,8 @@
     window.document.addEventListener( 'DOMContentLoaded', function () {
         type = window.document.getElementById( 'type' );
         checkboxes = window.document.getElementById( 'checkboxes' );
+        start = window.document.getElementById( 'start' );
+        stop = window.document.getElementById( 'stop' );
         
         type.addEventListener( 'change', function ( event ) {
             clearCheckbox( checkboxes );
@@ -66,5 +68,14 @@
         } );
         
         createSelect();
+        
+        start.addEventListener( 'click', function ( event ) {
+            var bg = chrome.extension.getBackgroundPage();
+            bg.startAlarm();
+        } );
+        stop.addEventListener( 'click', function ( event ) {
+            var bg = chrome.extension.getBackgroundPage();
+            bg.stopAlarm();
+        } );
     } );
 } ( window ));
