@@ -4,23 +4,21 @@
     "version": "0.1",
     "description": "Master of Epic栽培用タイマー",
     "icons": {
-        "16": "icons/icon16x16.png",
-        "48": "icons/icon48x48.png",
         "128": "icons/icon128x128.png"
     },
     "browser_action": {
         "default_icon": {
-            "19": "icons/icon19x19.png",
-            "38": "icons/icon38x38.png"
+            "19": "icons/icon19x19.png"
         },
         "default_title": "もえ栽培",
         "default_popup": "popup.html"
     },
     "background": {
         "persistent": true,
-        "scripts": [ "background.js" ]
+        "page": "background.html"
     },
     "permissions": [
-        "alarms"
+        "alarms",
+        "storage"
     ]
 }
