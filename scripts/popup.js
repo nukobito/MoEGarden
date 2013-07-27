@@ -1,116 +1,79 @@
 (function ( window ) {
-    var text = null;
-    var button = null;
-    var textarea = null;
+    var background = null;
+    var select = null;
+    var start = null;
+    var checkboxes = null;
     
-    function onClick_Button( event ) {
-        chrome.storage.local.set( { myValue: text.value }, function () {
-            console.log( 'set storage.' );
-        } );
+    function createCheckboxes() {
+        if ( select.selectedIndex == 0 )
+            return void( 0 );
+        
+        var times = background.items[ select.selectedIndex ].times.split( ',' );
+        for ( var key in times ) {
+            if ( key == 0 )
+                continue;
+            
+            var inputElement = window.document.createElement( 'input' );
+            inputElement.type = 'checkbox';
+            inputElement.value = times[ key ];
+            checkboxes.appendChild( inputElement );
+            
+            var text = null;
+            if ( key == times.length - 1 ) text = '収穫まで';
+            else text = times[ key ] + '分まで';
+            
+            var textNode = window.document.createTextNode( text );
+            checkboxes.appendChild( textNode );
+            
+            var wbr = window.document.createElement( 'wbr' );
+            checkboxes.appendChild( wbr );
+        }
     }
     
-    function onDOMContentLoaded( event ) {
-        text = window.document.getElementById( 'text' );
-        button = window.document.getElementById( 'button' );
-        textarea = window.document.getElementById( 'textarea' );
+    function onChange_Select( _ ) {
+        background.stopAlarm();
         
+        while ( checkboxes.firstChild ) {
+            checkboxes.removeChild( checkboxes.firstChild );
+        }
         
-        chrome.storage.local.get( 'myValue', function ( items ) {
-            if ( items.myValue )
-                text.value = items.myValue;
-        } );
+        chrome.storage.local.set( { selectedIndex: select.selectedIndex } );
+        createCheckboxes();
+    }
+    
+    function onClick_Start( _ ) {
+        if ( select.selectedIndex == 0 )
+            return void( 0 );
         
+        background.stopAlarm();
+        background.startAlarm( select.selectedIndex );
+    }
+    
+    function onGet_Storage( items ) {
+        if ( items.selectedIndex ) {
+            select.options[ items.selectedIndex ].selected = true;
+            createCheckboxes();
+        }
+    }
+    
+    function onDOMContentLoaded( _ ) {
+        background = chrome.extension.getBackgroundPage();
+        select = window.document.getElementById( 'select' );
+        start = window.document.getElementById( 'start' );
+        checkboxes = window.document.getElementById( 'checkboxes' );
         
+        for ( var key in background.items ) {
+            var element = window.document.createElement( 'option' );
+            element.innerHTML = background.items[ key ].text;
+            
+            select.appendChild( element );
+        }
         
-        button.addEventListener( 'click', onClick_Button );
+        chrome.storage.local.get( 'selectedIndex', onGet_Storage );
+        
+        select.addEventListener( 'change', onChange_Select );
+        start.addEventListener( 'click', onClick_Start );
     }
     
     window.document.addEventListener( 'DOMContentLoaded', onDOMContentLoaded );
 }( window ));
-
-
-
-
-
-
-//(function ( window ) {
-//    var items = [
-//        { text: '【タイプを選ぶ】', items: [] },
-//        { text: '120分 (ハーブ等)', times: [ 120, 110, 80, 30, 0 ] },
-//        { text: '180分 (キノコ類)', times: [ 180, 120, 60, 0 ] },
-//        { text: '180分 (キノコ以外?)', times: [ 180, 160, 120, 60, 0 ] },
-//        { text: '240分 (栽培全般?)', times: [ 240, 180, 120, 60, 0 ] },
-//        { text: '300分 (イチゴ、稲等)', times: [ 300, 240, 180, 60, 0 ] },
-//        { text: '300分 (こんにゃく等)', times: [ 300, 240, 150, 60, 0 ] },
-//        { text: '360分 (フルーク)', times: [ 360, 300, 210, 90, 0 ] },
-//        { text: '360分 (スイカ名等)', times: [ 360, 300, 180, 60, 0 ] }
-//    ];
-//    
-//    var type = null, checkboxes = null, start = null;
-//    
-//    function createSelect() {
-//        type.length = items.length;
-//        for ( var key in items ) {
-//            var text = items[ key ].text;
-//            var times = items[ key ].times;
-//            
-//            type.options[ key ].text = items[ key ].text;
-//            type.options[ key ].value = key;
-//        }
-//    }
-//    
-//    function createCheckbox( times ) {
-//        for ( var i = 0; i < times.length; i++ ) {
-//            var checkbox = null;
-//            var text = '';
-//            switch ( i ) {
-//                case 0:
-//                    // 何もしない。
-//                    break;
-//                case (times.length - 1):
-//                    checkbox = window.document.createElement( 'input' );
-//                    checkbox.type = 'checkbox';
-//                    checkboxes.appendChild( checkbox );
-//                    text = window.document.createTextNode( '収穫まで' );
-//                    checkboxes.appendChild( text );
-//                    break;
-//                default:
-//                    checkbox = window.document.createElement( 'input' );
-//                    checkbox.type = 'checkbox';
-//                    checkboxes.appendChild( checkbox );
-//                    text = window.document.createTextNode( String( times[ i ] ) + '分まで' + ' ' );
-//                    checkboxes.appendChild( text );
-//                    break;
-//            }
-//        }
-//    }
-//    
-//    function clearCheckbox( node ) {
-//        while ( node.firstChild ) {
-//            node.removeChild( node.firstChild );
-//        }
-//    }
-//    
-//    window.document.addEventListener( 'DOMContentLoaded', function () {
-//        type = window.document.getElementById( 'type' );
-//        checkboxes = window.document.getElementById( 'checkboxes' );
-//        start = window.document.getElementById( 'start' );
-//        stop = window.document.getElementById( 'stop' );
-//        
-//        type.addEventListener( 'change', function ( event ) {
-//            clearCheckbox( checkboxes );
-//            createCheckbox( items[ event.target.value ].times );
-//        } );
-//        
-//        createSelect();
-//        
-//        start.addEventListener( 'click', function ( event ) {
-//            var bg = chrome.extension.getBackgroundPage();
-//            bg.startAlarm();
-//        } );
-//        stop.addEventListener( 'click', function ( event ) {
-//            var bg = chrome.extension.getBackgroundPage();
-//            bg.stopAlarm();
-//        } );
-//    } );
-//} ( window ));
