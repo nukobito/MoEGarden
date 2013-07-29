@@ -1,12 +1,4 @@
 (function ( window ) {
-    function onClick_Start( _ ) {
-        if ( select.selectedIndex == 0 )
-            return void( 0 );
-        
-        background.stopAlarm();
-        background.startAlarm( select.selectedIndex );
-    }
-    
     function createCheckboxes() {
         if ( select.selectedIndex == 0 )
             return void( 0 );
@@ -33,8 +25,6 @@
             
             input.addEventListener( 'click', onClick_Checkbox );
         }
-        
-        chrome.storage.local.get( 'checkedBoxes', onGetStorage_CheckedBoxes );
     }
     
     function onGetStorage_CheckedBoxes( items ) {
@@ -54,8 +44,17 @@
         chrome.storage.local.set( { checkedBoxes: arr } );
     }
     
+    function onClick_Start( _ ) {
+        if ( select.selectedIndex == 0 )
+            return void( 0 );
+        
+        background.stopAlarm();
+        background.startAlarm( select.selectedIndex );
+    }
+    
     function onChange_Select( _ ) {
 //        background.stopAlarm();
+        chrome.storage.local.remove( 'checkedBoxes' );
         
         while ( checkboxes.firstChild ) {
             checkboxes.removeChild( checkboxes.firstChild );
@@ -72,6 +71,7 @@
             select.options[ 0 ].selected = true;
         
         createCheckboxes();
+        chrome.storage.local.get( 'checkedBoxes', onGetStorage_CheckedBoxes );
         
         select.addEventListener( 'change', onChange_Select );
 //        start.addEventListener( 'click', onClick_Start );
