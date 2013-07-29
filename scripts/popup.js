@@ -1,22 +1,25 @@
 (function ( window ) {
-    var background = null;
-    var select = null;
-    var start = null;
-    var checkboxes = null;
+    function onClick_Start( _ ) {
+        if ( select.selectedIndex == 0 )
+            return void( 0 );
+        
+        background.stopAlarm();
+        background.startAlarm( select.selectedIndex );
+    }
     
     function createCheckboxes() {
         if ( select.selectedIndex == 0 )
             return void( 0 );
         
-        var times = background.items[ select.selectedIndex ].times.split( ',' );
+        var times = background.items[ select.selectedIndex ].times;
         for ( var key in times ) {
             if ( key == 0 )
                 continue;
             
-            var inputElement = window.document.createElement( 'input' );
-            inputElement.type = 'checkbox';
-            inputElement.value = times[ key ];
-            checkboxes.appendChild( inputElement );
+            var input = window.document.createElement( 'input' );
+            input.type = 'checkbox';
+            input.value = String( key );
+            checkboxes.appendChild( input );
             
             var text = null;
             if ( key == times.length - 1 ) text = '収穫まで';
@@ -27,11 +30,32 @@
             
             var wbr = window.document.createElement( 'wbr' );
             checkboxes.appendChild( wbr );
+            
+            input.addEventListener( 'click', onClick_Checkbox );
+        }
+        
+        chrome.storage.local.get( 'checkedBoxes', onGetStorage_CheckedBoxes );
+    }
+    
+    function onGetStorage_CheckedBoxes( items ) {
+        var childs = checkboxes.querySelectorAll( 'input[type="checkbox"]' );
+        for ( var i = 0; i < childs.length; i++ ) {
+            childs[ i ].checked = items.checkedBoxes[ i ];
         }
     }
     
+    function onClick_Checkbox( _ ) {
+        var arr = [];
+        var childs = checkboxes.querySelectorAll( 'input[type="checkbox"]' );
+        for ( var i = 0; i < childs.length; i++ ) {
+            arr.push( childs[ i ].checked );
+        }
+        
+        chrome.storage.local.set( { checkedBoxes: arr } );
+    }
+    
     function onChange_Select( _ ) {
-        background.stopAlarm();
+//        background.stopAlarm();
         
         while ( checkboxes.firstChild ) {
             checkboxes.removeChild( checkboxes.firstChild );
@@ -41,39 +65,34 @@
         createCheckboxes();
     }
     
-    function onClick_Start( _ ) {
-        if ( select.selectedIndex == 0 )
-            return void( 0 );
-        
-        background.stopAlarm();
-        background.startAlarm( select.selectedIndex );
-    }
-    
-    function onGet_Storage( items ) {
-        if ( items.selectedIndex ) {
+    function onGetStorage_SelectedIndex( items ) {
+        if ( items.selectedIndex )
             select.options[ items.selectedIndex ].selected = true;
-            createCheckboxes();
-        }
-    }
-    
-    function onDOMContentLoaded( _ ) {
-        background = chrome.extension.getBackgroundPage();
-        select = window.document.getElementById( 'select' );
-        start = window.document.getElementById( 'start' );
-        checkboxes = window.document.getElementById( 'checkboxes' );
+        else
+            select.options[ 0 ].selected = true;
         
-        for ( var key in background.items ) {
-            var element = window.document.createElement( 'option' );
-            element.innerHTML = background.items[ key ].text;
-            
-            select.appendChild( element );
-        }
-        
-        chrome.storage.local.get( 'selectedIndex', onGet_Storage );
+        createCheckboxes();
         
         select.addEventListener( 'change', onChange_Select );
-        start.addEventListener( 'click', onClick_Start );
+//        start.addEventListener( 'click', onClick_Start );
     }
     
-    window.document.addEventListener( 'DOMContentLoaded', onDOMContentLoaded );
+    // =======================================================================
+    //
+    //      global.
+    //
+    // =======================================================================
+    var background = chrome.extension.getBackgroundPage();
+    var select = window.document.getElementById( 'select' );
+    var start = window.document.getElementById( 'start' );
+    var checkboxes = window.document.getElementById( 'checkboxes' );
+    
+    var option = null;
+    for ( var key in background.items ) {
+        option = window.document.createElement( 'option' );
+        option.innerHTML = background.items[ key ].text;
+        select.appendChild( option );
+    }
+    
+    chrome.storage.local.get( 'selectedIndex', onGetStorage_SelectedIndex );
 }( window ));
