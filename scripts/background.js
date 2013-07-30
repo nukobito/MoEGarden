@@ -44,6 +44,9 @@
             chrome.browserAction.setBadgeBackgroundColor( { color: [ 255, 0, 0, 255 ] } );
         
         chrome.browserAction.setBadgeText( { text: String( minute ) } );
+        
+        if ( minute <= 0 )
+            stopAlarm();
     }
     
     function onGetStorage_CheckedBoxes( items ) {
