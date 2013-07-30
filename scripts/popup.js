@@ -1,9 +1,13 @@
 (function ( window ) {
+    function getCheckboxesChild() {
+        return checkboxes.querySelectorAll( 'input[type="checkbox"]' );
+    }
+    
     function createCheckboxes() {
         if ( select.selectedIndex == 0 )
             return void( 0 );
         
-        var times = background.items[ select.selectedIndex ].times;
+        var times = background.constant[ select.selectedIndex ].times;
         for ( var key in times ) {
             if ( key == 0 )
                 continue;
@@ -28,7 +32,7 @@
     }
     
     function onGetStorage_CheckedBoxes( items ) {
-        var childs = checkboxes.querySelectorAll( 'input[type="checkbox"]' );
+        var childs = getCheckboxesChild();
         for ( var i = 0; i < childs.length; i++ ) {
             childs[ i ].checked = items.checkedBoxes[ i ];
         }
@@ -36,12 +40,13 @@
     
     function onClick_Checkbox( _ ) {
         var arr = [];
-        var childs = checkboxes.querySelectorAll( 'input[type="checkbox"]' );
+        var childs = getCheckboxesChild();
         for ( var i = 0; i < childs.length; i++ ) {
             arr.push( childs[ i ].checked );
         }
         
         chrome.storage.local.set( { checkedBoxes: arr } );
+        background.updateCheckedBoxes();
     }
     
     function onClick_Start( _ ) {
@@ -49,11 +54,13 @@
             return void( 0 );
         
         background.stopAlarm();
-        background.startAlarm( select.selectedIndex );
+        chrome.storage.local.set( { selectedIndex: select.selectedIndex } );
+        onClick_Checkbox();
+        background.startAlarm();
     }
     
     function onChange_Select( _ ) {
-//        background.stopAlarm();
+        background.stopAlarm();
         chrome.storage.local.remove( 'checkedBoxes' );
         
         while ( checkboxes.firstChild ) {
@@ -74,23 +81,18 @@
         chrome.storage.local.get( 'checkedBoxes', onGetStorage_CheckedBoxes );
         
         select.addEventListener( 'change', onChange_Select );
-//        start.addEventListener( 'click', onClick_Start );
+        start.addEventListener( 'click', onClick_Start );
     }
     
-    // =======================================================================
-    //
-    //      global.
-    //
-    // =======================================================================
     var background = chrome.extension.getBackgroundPage();
     var select = window.document.getElementById( 'select' );
     var start = window.document.getElementById( 'start' );
     var checkboxes = window.document.getElementById( 'checkboxes' );
     
     var option = null;
-    for ( var key in background.items ) {
+    for ( var key in background.constant ) {
         option = window.document.createElement( 'option' );
-        option.innerHTML = background.items[ key ].text;
+        option.innerHTML = background.constant[ key ].text;
         select.appendChild( option );
     }
     
